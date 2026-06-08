@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test (iOS Simulator)
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Select iOS Simulator
+        id: simulator
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available -j \
+            | python3 -c "import json,sys; devices=json.load(sys.stdin)['devices']; \
+          candidates=[d for os_name in sorted(devices, reverse=True) for d in devices[os_name] \
+            if d['isAvailable'] and 'iPhone' in d['name'] and 'Pro' not in d['name'] and 'Plus' not in d['name'] and 'mini' not in d['name']]; \
+          print(candidates[0]['udid'] if candidates else '')")
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No suitable iPhone simulator found"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$DEVICE_ID" 2>/dev/null || true
+
+      - name: Run package tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -scheme SnapSheet \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.device_id }}" \
+            -resultBundlePath TestResults
+        env:
+          NSUnbufferedIO: YES
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: TestResults
+          if-no-files-found: ignore
+
+  demo:
+    name: Build Demo App
+    runs-on: macos-15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Select iOS Simulator
+        id: simulator
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available -j \
+            | python3 -c "import json,sys; devices=json.load(sys.stdin)['devices']; \
+          candidates=[d for os_name in sorted(devices, reverse=True) for d in devices[os_name] \
+            if d['isAvailable'] and 'iPhone' in d['name'] and 'Pro' not in d['name'] and 'Plus' not in d['name'] and 'mini' not in d['name']]; \
+          print(candidates[0]['udid'] if candidates else '')")
+          if [ -z "$DEVICE_ID" ]; then
+            echo "No suitable iPhone simulator found"
+            xcrun simctl list devices available
+            exit 1
+          fi
+          echo "device_id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Build SnapSheetDemo
+        run: |
+          set -o pipefail
+          cd Examples/SnapSheetDemo
+          xcodebuild build \
+            -project SnapSheetDemo.xcodeproj \
+            -scheme SnapSheetDemo \
+            -destination "platform=iOS Simulator,id=${{ steps.simulator.outputs.device_id }}"
+        env:
+          NSUnbufferedIO: YES

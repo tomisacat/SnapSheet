@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Architecture Guide
+    url: https://github.com/tomisacat/SnapSheet/blob/main/docs/ARCHITECTURE.md
+    about: Learn how SnapSheet is structured before opening an issue
+  - name: README
+    url: https://github.com/tomisacat/SnapSheet#readme
+    about: Installation, quick start, and API reference
