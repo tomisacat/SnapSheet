@@ -30,10 +30,9 @@ Snap, scroll, and detent controls in the [demo app](Examples/SnapSheetDemo/) —
 
 ## Requirements
 
-| | |
-|---|---|
-| **Platforms** | iOS 18+ |
-| **Swift** | 6.2+ |
+* iOS 18+
+* Swift 6.2+
+* Xcode 26+
 
 ## Installation
 
