@@ -8,7 +8,7 @@ SnapSheet composes a full-screen background view with a draggable, snap-to-deten
 
 <p align="center">
   <a href="docs/media/SnapSheet-Demo.mov">
-    <img src="docs/media/SnapSheet-Demo-poster.png" alt="SnapSheet demo — drag the sheet between snap detents">
+    <img src="docs/media/SnapSheet-Demo-poster.png" alt="SnapSheet demo — drag the sheet between snap detents" height="600">
   </a>
 </p>
 
